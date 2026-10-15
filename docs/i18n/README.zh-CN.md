@@ -3,7 +3,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../../.github/assets/banner-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="../../.github/assets/banner-light.svg">
-  <img alt="tmpl.general-repo" src="../../.github/assets/banner-light.svg" width="455">
+  <img alt="general-repo-template" src="../../.github/assets/banner-light.svg" width="455">
 </picture>
 
 <h1>🧰 通用仓库模板</h1>
@@ -11,15 +11,15 @@
 <p><b>Git 规范、智能体指令与带确认关卡的智能体技能，开箱即用于任何新仓库。</b></p>
 
 <p>
-  <a href="../../LICENSE"><img alt="License" src="https://img.shields.io/github/license/rohanhong/tmpl.general-repo"></a>
-  <a href="https://github.com/rohanhong/tmpl.general-repo/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/rohanhong/tmpl.general-repo"></a>
-  <a href="https://github.com/rohanhong/tmpl.general-repo/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/rohanhong/tmpl.general-repo?style=flat"></a>
-  <a href="https://github.com/rohanhong/tmpl.general-repo/generate"><img alt="Use this template" src="https://img.shields.io/badge/use%20this-template-2ea44f?logo=github"></a>
+  <a href="../../LICENSE"><img alt="License" src="https://img.shields.io/github/license/rohanhong/general-repo-template"></a>
+  <a href="https://github.com/rohanhong/general-repo-template/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/rohanhong/general-repo-template"></a>
+  <a href="https://github.com/rohanhong/general-repo-template/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/rohanhong/general-repo-template?style=flat"></a>
+  <a href="https://github.com/rohanhong/general-repo-template/generate"><img alt="Use this template" src="https://img.shields.io/badge/use%20this-template-2ea44f?logo=github"></a>
   <a href="https://agents.md"><img alt="AGENTS.md" src="https://img.shields.io/badge/AGENTS.md-ready-24292f"></a>
   <a href="https://agentskills.io"><img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-open%20format-8250df"></a>
   <!-- Reserved badges: uncomment when the service exists.
-  <a href="https://github.com/rohanhong/tmpl.general-repo/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/rohanhong/tmpl.general-repo/ci.yml?branch=main"></a>
-  <a href="https://github.com/rohanhong/tmpl.general-repo/releases"><img alt="Release" src="https://img.shields.io/github/v/release/rohanhong/tmpl.general-repo"></a>
+  <a href="https://github.com/rohanhong/general-repo-template/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/rohanhong/general-repo-template/ci.yml?branch=main"></a>
+  <a href="https://github.com/rohanhong/general-repo-template/releases"><img alt="Release" src="https://img.shields.io/github/v/release/rohanhong/general-repo-template"></a>
   -->
 </p>
 
@@ -147,10 +147,10 @@ EOF
 
 ## ⭐ Star History
 
-<a href="https://www.star-history.com/#rohanhong/tmpl.general-repo&Date">
+<a href="https://www.star-history.com/#rohanhong/general-repo-template&Date">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=rohanhong/tmpl.general-repo&type=Date&theme=dark">
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=rohanhong/tmpl.general-repo&type=Date">
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=rohanhong/tmpl.general-repo&type=Date" width="600">
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=rohanhong/general-repo-template&type=Date&theme=dark">
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=rohanhong/general-repo-template&type=Date">
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=rohanhong/general-repo-template&type=Date" width="600">
   </picture>
 </a>

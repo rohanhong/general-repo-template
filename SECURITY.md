@@ -15,7 +15,7 @@ Please do not report security problems in public issues, discussions, or pull
 requests.
 
 Report them privately through GitHub:
-[Report a vulnerability](https://github.com/rohanhong/tmpl.general-repo/security/advisories/new)
+[Report a vulnerability](https://github.com/rohanhong/general-repo-template/security/advisories/new)
 (the **Security** tab, then **Report a vulnerability**).
 
 Include what you can of:
