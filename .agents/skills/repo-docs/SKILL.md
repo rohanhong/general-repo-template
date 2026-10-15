@@ -31,7 +31,7 @@ Run every command in this skill in a POSIX shell. Repository paths are relative 
    echo "== header images"; ls .github/assets 2>/dev/null
    echo "== settings record"; ls .github/settings.yml 2>/dev/null
    echo "== template residue"
-   grep -lE 'tmpl\.general-repo|General Repository Template' README* CONTRIBUTING* CODE_OF_CONDUCT* SECURITY* .github/*.md docs/*.md docs/i18n/*.md .github/assets/* .github/settings.yml 2>/dev/null
+   grep -lE 'general-repo-template|General Repository Template' README* CONTRIBUTING* CODE_OF_CONDUCT* SECURITY* .github/*.md docs/*.md docs/i18n/*.md .github/assets/* .github/settings.yml 2>/dev/null
    echo "== copyright lines"; for f in LICENSE* LICENCE* COPYING* NOTICE*; do [ -f "$f" ] || continue; echo "-- $f"; grep -iE -m 3 '^[[:space:]]*copyright[[:space:]]' "$f"; done
    echo "== origin"; git remote get-url origin 2>/dev/null
    echo "== user.name"; git config user.name
