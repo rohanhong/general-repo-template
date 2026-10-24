@@ -1,6 +1,13 @@
 # Phase 4: Token creation, login, and CLI rename
 
-Loaded from `hf-setup/SKILL.md` Phase 4. Read this file when walking the user through the Phase 4b dev token and the Phase 4c login. The Hard rules in `SKILL.md` remain in force throughout; the user runs every command here on their own machine.
+Loaded from `hf-setup/SKILL.md` Phase 4. Read this file at Phase 4a, before recommending the token split, and keep it at hand for the Phase 4b dev token and the Phase 4c login. The Hard rules in `SKILL.md` remain in force throughout; the user runs every command here on their own machine.
+
+## 4a. Token strategy
+
+HF supports fine-grained tokens. Recommend a two-token split from the start:
+
+* **Dev token (Write)**: scoped to the new repo, persisted on the workstation via `hf auth login`. Used for pushing files, updating README, managing settings. Created in 4b.
+* **Deploy token (Read-only)**: scoped to the same repo, distributed to CI, robots, or teammates. Used for downloads only. Created in Phase 6e, kept separate so leaked deploy credentials cannot push.
 
 ## 4b. Create the dev token
 

@@ -52,6 +52,8 @@ Naming character rules: lowercase ASCII letters, digits, and `-` only. No unders
 
 Web UI is easier the first time (visual confirmation, license dropdown, type descriptions); the user clicks through `https://huggingface.co/new` and confirms back in the conversation.
 
+The web UI is the only path when probe 3 reported not logged in: the Phase 4 dev token is scoped to this repo, so it cannot exist before the repo does. The CLI path needs a token already allowed to create repos under `<owner>`; a token scoped to selected repos is not.
+
 `hf repos` and `hf repo` are aliases for the same command group and both work; prefer the plural for consistency with the rest of this skill. Do not tell the user the singular is deprecated: current releases print identical help for both with no deprecation notice.
 
 A created repo occupies the owner's namespace under that name, and even immediate deletion leaves the slug reserved for a cooldown window, so a wrong name costs more than the bandwidth of the first push.

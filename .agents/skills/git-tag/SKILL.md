@@ -1,6 +1,6 @@
 ---
 name: git-tag
-description: Create an annotated version tag (v<major>.<minor>.<patch>) on a merge commit or named commit per the repo's release flow, and optionally push it to origin, each behind its own choice-question gate. Use for "tag this release", "tag v1.2.0", "create the patch tag after the hotfix", or finishing a release/* or hotfix/* integration. Refuses to move, delete, or force-push tags, and to push a tag whose commit no origin branch contains.
+description: Create an annotated vX.Y.Z version tag on a merge commit or named commit per the repo's release flow, and optionally push it to origin, each step gated. Use for "tag this release", "tag v1.2.0", "create the patch tag after the hotfix", or finishing a release/* or hotfix/* integration. Refuses to move, delete, or force-push tags, and to push a tag whose commit no origin branch contains.
 compatibility: Requires git 2.22 or later and a POSIX shell (Git Bash on Windows).
 ---
 

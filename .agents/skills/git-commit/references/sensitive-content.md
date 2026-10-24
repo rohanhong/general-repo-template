@@ -1,6 +1,6 @@
 # Sensitive-content scan
 
-Reference for `git-commit` step 6. The pattern lists live inline in SKILL.md step 6, so the scan works even when this file is not read; this file holds the scan scope, the commands, and the reasons behind each rule. Any match STOPS the flow for per-file confirmation.
+Reference for `git-commit` step 6. SKILL.md step 6 keeps the filename list inline; this file holds the value-shaped and home-path patterns, the scan scope, the commands, and the reasons behind each rule. Step 6 stops when this file is missing, so a commit is never left unscanned. Any match STOPS the flow for per-file confirmation.
 
 ## Scan scope
 
@@ -12,7 +12,7 @@ Take path names from the step-1 `git status --porcelain -z -uall` listing. Witho
 
 Filenames: match each listed path against the step-6 filename list (shell glob semantics on the last path segment), skipping the three `.env.*` exemptions.
 
-Value-shaped content: the step-6 value regexes, joined with `|`. The pattern holds both quote kinds and a backtick, so assign it from a quoted heredoc, which passes every character through unchanged:
+Value-shaped content: the extended regexes below, joined with `|`: a private-key header, Hugging Face, GitHub, AWS, Slack, JWT, and `sk-` key shapes, and a credential keyword (any case) assigned a literal value. Bare words like `token` outside such an assignment are NOT matches. The pattern holds both quote kinds and a backtick, so assign it from a quoted heredoc, which passes every character through unchanged:
 
 ```sh
 VALUE_RE=$(cat <<'RE'
@@ -23,9 +23,10 @@ RE
 
 Then run `grep -nE -e "$VALUE_RE"` over the diff (or the untracked file). The `-e` is required: the private-key pattern starts with `-`, and without it grep reads the pattern as an option and exits 2. The assignment and the grep run unchanged under bash and dash.
 
-Home paths: check only the lines the commit adds. Per staged path (`$HOME_RE` holds the two step-6 home-path regexes joined with `|`):
+Home paths naming a real user: check only the lines the commit adds. A `<user>` placeholder, `~/`, `$HOME`, and `%USERPROFILE%` name no user and are NOT matches. Assign the two patterns, then run the check per staged path:
 
 ```sh
+HOME_RE='/(home|Users)/[A-Za-z0-9._-]+/|[A-Za-z]:[\\]+Users[\\]+[A-Za-z0-9._-]+[\\]'
 git diff --cached -U0 -- "$p" | grep -E '^[+]' | grep -vE '^[+]{3} ' | grep -nE "$HOME_RE"
 ```
 

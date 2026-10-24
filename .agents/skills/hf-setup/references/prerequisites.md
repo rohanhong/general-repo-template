@@ -1,6 +1,12 @@
 # Phase 0: Probe output and prerequisite fixes
 
-Loaded from `hf-setup/SKILL.md` Phase 0. Read this file when reading the Phase 0a probe results and when rendering a Phase 0b fix. The Hard rules in `SKILL.md` remain in force throughout; in particular this skill only renders these commands for the user to run and never runs an installer or `hf auth login` itself.
+Loaded from `hf-setup/SKILL.md` Phase 0. Read this file at Phase 0a, before reading the probe results: its interpreter and local-path rules apply to every later snippet the agent runs. Read it again when rendering a Phase 0b fix. The Hard rules in `SKILL.md` remain in force throughout; in particular this skill only renders the install fixes for the user to run and never runs an installer or `hf auth login` itself.
+
+## Interpreter and local paths
+
+Probe 2 prints the interpreter name that answered (the `<python>` placeholder in `SKILL.md`): POSIX systems expose `python3`; Windows usually only `python`, where a bare `python3` may be a failing Microsoft Store stub.
+
+Pass local paths to `<python>` as command-line arguments, never embedded in `-c` or heredoc source text: Git Bash converts MSYS paths such as `/c/...` in arguments to native Windows programs but not inside script text, and not in an argument containing `'` or `*`; so first run `command -v cygpath >/dev/null 2>&1 && P="$(cygpath -m "$P")"` on each path variable (a no-op without `cygpath`, as on macOS and Linux).
 
 ## Reading probe 3 (`hf auth whoami`)
 

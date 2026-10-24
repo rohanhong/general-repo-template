@@ -36,9 +36,9 @@ Seven phases, Phase 0 to Phase 6. Phase 0 is read-only probing plus user-driven 
 
 Reference files live under `references/` in the skill directory (AGENTS.md, Skill authoring); paths below are relative to it. Read each at the phase that names it:
 
-* `references/prerequisites.md` at Phase 0: probe 3 output shape and the per-prerequisite install fixes.
+* `references/prerequisites.md` at Phase 0: interpreter and local-path handling, probe 3 output shape, and the per-prerequisite install fixes.
 * `references/repo-design.md` at Phase 2, Phase 3, and Phase 5a: owner options, repo types, naming conventions, license and visibility options, creation details, in-repo layout.
-* `references/auth.md` at Phase 4: dev token steps, login options, CLI rename note.
+* `references/auth.md` at Phase 4: token strategy, dev token steps, login options, CLI rename note.
 * `references/manifest-integration.md` at Phase 6: manifest, downloader, runtime verification, `.gitignore`, deploy token and CI wiring.
 * `references/cli-reference.md` whenever rendering `hf` CLI commands or probing HF state without a browser. Python API for atomic multi-file commits: see `hf-upload`. Python API for downloads: see `hf-download`.
 
@@ -60,7 +60,7 @@ python3 -c 'import huggingface_hub as h; print("python3", h.__version__)' 2>/dev
 HF_HUB_DISABLE_UPDATE_CHECK=1 hf auth whoami --format agent
 ```
 
-Probe 2 prints the interpreter name that answered, then the library version (POSIX systems expose `python3`; Windows usually only `python`, where a bare `python3` may be a failing Microsoft Store stub). Every later snippet in this skill family writes the interpreter as the placeholder `<python>`; substitute the name probe 2 printed. Pass local paths to `<python>` as command-line arguments, never embedded in `-c` or heredoc source text: Git Bash converts MSYS paths such as `/c/...` in arguments to native Windows programs but not inside script text, and not in an argument containing `'` or `*`; so first run `command -v cygpath >/dev/null 2>&1 && P="$(cygpath -m "$P")"` on each path variable (a no-op without `cygpath`, as on macOS and Linux).
+Probe 2 prints the interpreter name that answered, then the library version. Every later snippet in this skill family writes the interpreter as the placeholder `<python>`; substitute the name probe 2 printed. Pass local paths to `<python>` as command-line arguments, converted first, as `references/prerequisites.md` (Interpreter and local paths) explains.
 
 If probe 1 returns `hf-missing`, treat probe 3 as "not logged in" by definition and go to 0b for the CLI install.
 
@@ -114,16 +114,7 @@ Decide the owner with a choice question: **Personal account `<username>`**, **Ex
 
 ### 3a. Detect existing repos
 
-Check both listings under the owner, since either type could already exist:
-
-```bash
-# Model repos:
-<python> -c "from huggingface_hub import HfApi; print([r.id for r in HfApi().list_models(author='<owner>')])"
-# Dataset repos:
-<python> -c "from huggingface_hub import HfApi; print([r.id for r in HfApi().list_datasets(author='<owner>')])"
-```
-
-Logged out, these calls return public repos only, so a private repo for this purpose stays invisible: ask the user whether one exists before treating the namespace as empty.
+Check both listings under the owner, since either type could already exist, with the two list commands in `references/cli-reference.md` (Probe HF state without a browser). Logged out, these calls return public repos only, so a private repo for this purpose stays invisible: ask the user whether one exists before treating the namespace as empty.
 
 If a repo for this purpose already exists, ask with a choice question whether to reuse it or create a fresh one. Never silently push into an existing repo; its contents could be unrelated.
 
@@ -159,7 +150,7 @@ visible : public | private
 
 If the agent runs the CLI, ask with a choice question (**create** / **abort**) before invoking it. If the user prefers the web UI there is no agent-side gate; the user clicks through `https://huggingface.co/new` and confirms back in the conversation. Either way, a wrong name is costly: see the slug note in `references/repo-design.md`.
 
-The web UI is the only path when probe 3 reported not logged in: the Phase 4 dev token is scoped to this repo, so it cannot exist before the repo does. Offer the CLI path only when probe 3 succeeded with a token already allowed to create repos under `<owner>` (a token scoped to selected repos is not):
+Offer the CLI path only when probe 3 succeeded with a token already allowed to create repos under `<owner>`; otherwise the web UI is the only path (`references/repo-design.md` says why):
 
 ```bash
 hf repos create <owner>/<name> --type <model|dataset>    # add --private as needed
@@ -171,14 +162,11 @@ Confirm the result at `https://huggingface.co/<owner>/<name>`. The CLI path sets
 
 ### 4a. Token strategy
 
-HF supports fine-grained tokens. Recommend a two-token split from the start:
-
-* **Dev token (Write)**: scoped to the new repo, persisted on the workstation via `hf auth login`. Used for pushing files, updating README, managing settings. Created in 4b.
-* **Deploy token (Read-only)**: scoped to the same repo, distributed to CI, robots, or teammates. Used for downloads only. Created in Phase 6e, kept separate so leaked deploy credentials cannot push.
+Read `references/auth.md` now and recommend its two-token split from the start: a Write dev token for this workstation (4b) and a separate Read-only deploy token (Phase 6e).
 
 ### 4b. Create the dev token
 
-Read `references/auth.md` now. Walk the user through creating a **Fine-grained** token (never classic) with Write access to contents and settings of the new repo only, named `<repo-name>-dev`, following its step list. The value is shown only once, on creation.
+Walk the user through creating a **Fine-grained** token (never classic) with Write access to contents and settings of the new repo only, named `<repo-name>-dev`, following the 4b step list in `references/auth.md`. The value is shown only once, on creation.
 
 ### 4c. Log in on the workstation
 
@@ -186,7 +174,7 @@ Read `references/auth.md` now. Walk the user through creating a **Fine-grained**
 hf auth login             # add --force to re-login when a token is already cached
 ```
 
-Keep the default `--no-add-to-git-credential` unless the user will `git clone` over HTTPS (see `references/auth.md`). Have the user run bare `hf auth login` and paste at the prompt; do NOT recommend `hf auth login --token $HF_TOKEN` interactively (it leaks the token into shell history and the process list; that form is for CI only).
+Have the user run bare `hf auth login` and paste at the prompt; do NOT recommend `hf auth login --token $HF_TOKEN` interactively (CI only). The credential-helper choice and the reasons are in `references/auth.md` (4c).
 
 Verify with the Phase 0a probe 3 command; expect exit 0 and `user=<username>`, plus `orgs=<list>` when the account belongs to an organization. Confirm that the owner chosen in Phase 2 is the user or one of the listed orgs. On a non-zero exit whose stderr contains `Invalid user token` the paste failed; ask the user to re-run `hf auth login --force`.
 
@@ -208,16 +196,7 @@ Invoke the `hf-upload` skill, passing forward the context established here so it
 
 `hf-upload` prints `info.oid` and `info.commit_url`; record both. The OID becomes the `hf_revision` pin in Phase 6a.
 
-If the user reused an existing repo in 3a and skipped 5b entirely, recover the current main SHA retroactively (`<repo_type>` is the Phase 3b choice; a dataset repo queried as `model` returns 404):
-
-```python
-from huggingface_hub import HfApi
-api = HfApi()
-sha = [b.target_commit for b in
-       api.list_repo_refs("<owner>/<repo>", repo_type="<repo_type>").branches
-       if b.name == "main"][0]
-print(sha)
-```
+If the user reused an existing repo in 3a and skipped 5b entirely, recover the current SHA of `main` retroactively with the main-tip snippet in `references/cli-reference.md` (Probe HF state without a browser).
 
 ## Phase 6 (optional): Manifest-pinned integration
 

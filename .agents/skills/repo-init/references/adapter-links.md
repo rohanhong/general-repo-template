@@ -1,6 +1,37 @@
 # Adapter link states and repairs
 
-Loaded from `repo-init/SKILL.md`. Read this file at step 1 when the adapter and archive probe prints anything other than the `archive excludes:` line, and at step 2 before offering a register or repair gate. The Hard rules in `SKILL.md` remain in force throughout.
+Loaded from `repo-init/SKILL.md`. Read this file at step 1, which runs its probe script and reports the states it prints, and at step 2 before offering a register or repair gate. The Hard rules in `SKILL.md` remain in force throughout.
+
+## Probe script
+
+Run it as written, under `sh`, so an unmatched glob is safe in zsh too:
+
+```
+sh <<'EOF'
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  ex=$(git check-attr export-ignore -- .gitmessage)
+  case "$ex" in *": set") echo "archive excludes: on";; *) echo "archive excludes: off";; esac
+  git ls-files -s | awk '$1=="120000"{print $4}' | while read -r l; do
+    t=$(git cat-file -p ":$l" | tr -d '\r\n')
+    case "$t" in *.agents/skills) ;; *) continue;; esac
+    [ "$(git cat-file -s ":$l")" -eq "${#t}" ] || echo "malformed: $l"
+    { [ -L "$l" ] && [ -e "$l" ]; } || echo "broken: $l"
+    case "$ex" in *": set")
+      d=${l%%/*}
+      case "$(git check-attr export-ignore -- "$d/")" in *": set") ;; *) echo "not export-ignored: $d/";; esac;;
+    esac
+  done
+else
+  echo "archive excludes: n/a (not a git repository)"
+fi
+for f in .[!.]*/skills; do
+  [ -f "$f" ] && [ ! -L "$f" ] || continue
+  case "$(tr -d '\r\n' < "$f")" in *.agents/skills) ;; *) continue;; esac
+  [ "$(git ls-files -s -- "$f" 2>/dev/null | cut -d' ' -f1)" = 120000 ] && continue
+  if [ "$(grep -c '' "$f")" -eq 1 ]; then echo "unregistered: $f"; else echo "malformed: $f"; fi
+done
+EOF
+```
 
 ## What the probe identifies
 
@@ -14,6 +45,22 @@ The probe runs under `sh` because zsh, the default interactive shell on macOS, a
 * `unregistered: <path>`: a link that arrived as a plain file through a copy or a fresh `git init` (the template's files were copied on a system without symlink support, or step 2's fresh start dropped the index that carried the link mode). A later `git add` would commit it as a regular file and lose the link for good; step 2 ends by registering it.
 * `malformed: <path>`: the link target is not exactly one line ending in `.agents/skills`. For a tracked link, its stored target carries a line break (a trailing newline or CRLF from an editor or `echo`), so every symlink-aware checkout gets a link that points nowhere; for an unregistered plain file, its content spans more than one line. Step 2 repairs a tracked link whose target is a single line plus trailing line breaks; anything spanning several lines is report-only (the user fixes the content by hand, then re-runs the skill).
 * `not export-ignored: <dir>/`: appears only once archive excludes are on; the adapter's top directory is missing from the AI tool export-ignore list. Report-only: tell the user to add a `<dir>/ export-ignore` line to that list. The trailing slash matters, since `dir/` patterns match only directory paths.
+
+## Register and repair commands
+
+Register, per `unregistered:` path:
+
+```
+tr -d '\r\n' < <path> > <path>.tmp && mv <path>.tmp <path>
+git update-index --add --cacheinfo "120000,$(tr -d '\r\n' < <path> | git hash-object -w --stdin),<path>"
+```
+
+Repair, per single-line `malformed:` tracked link:
+
+```
+[ -L <path> ] || { tr -d '\r\n' < <path> > <path>.tmp && mv <path>.tmp <path>; }
+git update-index --cacheinfo "120000,$(git cat-file -p :<path> | tr -d '\r\n' | git hash-object -w --stdin),<path>"
+```
 
 ## Why the register and repair commands look the way they do
 

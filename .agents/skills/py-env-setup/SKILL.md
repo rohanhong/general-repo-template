@@ -1,7 +1,7 @@
 ---
 name: py-env-setup
 description: >-
-  Create or adopt a Python environment for the current repo: a dedicated conda env named <repo>_env_py3XX by default, with the Python version probed at runtime and chosen by the user, a root-level environment.yml as the reproducible spec, and pip dependencies wired in from a root-level requirements.txt when the project installs packages that way; can instead reuse an existing machine-wide env. Use for "set up a python env", "create a conda env for this repo", "install requirements.txt into a fresh env", "this project needs python", or when repo-init step 6f invokes it. Probes read-only first; every mutation is gated; never touches shell profiles or existing envs.
+  Create or adopt a Python environment for the current repo: a dedicated conda env (<repo>_env_py3XX, user-chosen Python) with a root environment.yml and pip dependencies from requirements.txt, or an existing machine-wide env. Use for "set up a python env", "create a conda env for this repo", "install requirements.txt into a fresh env", "this project needs python". Every mutation is gated; never touches shell profiles or existing envs.
 compatibility: Needs conda installed, a POSIX shell (Git Bash on Windows), and network access to the conda channels (conda-forge) and, for pip dependencies, PyPI.
 ---
 

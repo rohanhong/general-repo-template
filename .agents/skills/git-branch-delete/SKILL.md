@@ -26,7 +26,7 @@ Resolve these before step 1:
 
 Terms such as choice question, independent reads, invoke, and suggest follow AGENTS.md (Skill authoring); in a non-interactive session every gate ends this skill.
 
-Run every command in this skill in a POSIX shell; the redirections used across this skill family are POSIX syntax and break under PowerShell.
+Run every command in this skill in a POSIX shell; the redirections used across this skill family are POSIX syntax and break under PowerShell. Read `references/rationale.md` in the skill directory when the user asks why the skill works this way.
 
 **Several targets.** Run steps 1 to 3 for every named target before asking anything; a target that stops there is reported with its reason and left out, and the rest continue. A target whose stop asks a question (step 1's exact name, step 2's base) does not block the others: collect those questions and ask them together once steps 1 to 3 have run for every target; an answered target re-runs from step 1 and rejoins the set, an unanswered one stays out with its reason. Step 4 renders every target's findings together (one row per target when shown as a table). Opt-ins stay per branch: step 5 needs one naming each unmerged branch, and the step-6 remote-commits opt-in names each remote. Step 6 asks one scope question for the set when every target offers the same options, otherwise one per target. Step 7 executes branch by branch and stops the whole run at the first failure; step 8 reports each branch, including those left out or not reached.
 
@@ -93,15 +93,6 @@ Run every command in this skill in a POSIX shell; the redirections used across t
 7. **Execute** the approved commands in the displayed order, local first. If the local delete fails, do NOT proceed to the remote delete. Capture output verbatim. A remote delete rejected with `stale info` means someone pushed to the branch after step 2: the remote branch stays, and the fix is to re-run from step 2 so the new commits are read and classified, never to retry with a fresh SHA.
 
 8. **Report.** Show the deleted branch name, the tip SHA recorded in step 2, and the recovery command `git branch <branch> <tip-sha>` (valid until the reflog entry expires). State whether the remote counterpart was deleted or left in place.
-
-# Rationale
-
-* **Remote deletion lives here, not in `git-push`.** `git-push` is scoped to publishing commits and refuses anything that is not a fast-forward of content; a remote branch delete publishes an absence and belongs with the rest of branch lifecycle management. Keeping it here also means one skill owns the merged-check that makes the deletion safe.
-* **Refresh, then lease.** The merged-check on the remote branch is only as good as the tracking ref it reads, so step 2 fetches that one ref first; the step-6 lease then closes the window between that read and the delete. The lease is allowed here despite the force-push ban because it cannot make a delete succeed that a plain delete would refuse: it only adds a condition.
-* **Two-stage consent** (step 5 opt-in for unmerged, step 6 scope choice) rather than one gate: the two decisions have different blast radii. Losing unmerged local commits is recoverable from the reflog for a while; deleting the remote ref affects collaborators immediately.
-* **The tip SHA is printed before deletion, not after.** After `git branch -d` the name is gone, and a user who realises the mistake a minute later needs the SHA, not a reflog lecture.
-* **Exact spelling before anything else.** git's own checks compare literal ref names while a case-insensitive filesystem resolves any casing to the one loose ref, so a name typed with the wrong case can reach a protected or checked-out branch. `for-each-ref` reports the stored spelling, which makes its equality the one reliable test.
-* **`-D` on a verified-merged branch is not an escalation.** git's `-d` valve compares against the upstream or HEAD, never against the integration base, so it answers a different question than this skill asks. Step 3's `git log <base>..<branch>` is the stronger check; once it is empty, the valve can only produce a false refusal. Predicting the valve up front keeps an actual `-d` refusal meaningful: it means a ref moved between the gather and the delete, not that the classification was wrong.
 
 # Hard rules
 

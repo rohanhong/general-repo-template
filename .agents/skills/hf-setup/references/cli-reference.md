@@ -29,6 +29,28 @@ Python API for atomic multi-file commits: see `hf-upload`. Python API for downlo
 
 ## Probe HF state without a browser
 
+Repos under an owner (Phase 3a), one listing per type:
+
+```bash
+# Model repos:
+<python> -c "from huggingface_hub import HfApi; print([r.id for r in HfApi().list_models(author='<owner>')])"
+# Dataset repos:
+<python> -c "from huggingface_hub import HfApi; print([r.id for r in HfApi().list_datasets(author='<owner>')])"
+```
+
+Tip of `main` (Phase 5c, for a reused repo the first upload skipped); it reads branch refs only, so it stays fast on large repos and names `main` explicitly, the branch `hf-upload` commits to (`<repo_type>` as noted below):
+
+```python
+from huggingface_hub import HfApi
+api = HfApi()
+sha = [b.target_commit for b in
+       api.list_repo_refs("<owner>/<repo>", repo_type="<repo_type>").branches
+       if b.name == "main"][0]
+print(sha)
+```
+
+One repo's state:
+
 `<repo_type>` is the Phase 3b choice (`model` or `dataset`); a dataset repo queried as `model` returns 404:
 
 ```python

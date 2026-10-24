@@ -1,0 +1,13 @@
+# Rationale
+
+Loaded from `repo-docs/SKILL.md`. Read this file when the user asks why the skill works the way it does, or before changing the skill. The Hard rules in `SKILL.md` remain in force throughout.
+
+* **One screen first, fixed ending.** High-star projects keep the header to logo, title, tagline, badges, and links, reach a working command within a few scrolls, and close with contributing, community, legal, and star-history material. `references/layout.md` records the survey.
+* **Canonical texts are fetched, not written.** GitHub detects licenses by exact text, and a paraphrased code of conduct is no longer the Contributor Covenant. Fetching at run time keeps the texts current and the skill small; failing closed when offline avoids a wrong legal text.
+* **Draft everything, then write once, in a fixed order.** Every file is approved before any is written. Saving originals and making moves before writes means a new file never overwrites a document that was meant to move, and deleting last, never a path just written, means a residue file and its replacement at the same path cannot cancel each other.
+* **Residue follows the copy, not a string.** A template copy's LICENSE, translations, and banners may not contain the template's name, but they came with the copy, so one confirmed residue file marks them all for review; the user confirms the copyright line rather than the skill guessing whose name it is.
+* **Badges report facts.** A badge for a missing service renders as "not found" and reads as a broken project; reserving it in a comment keeps the slot without the noise.
+* **English canonical where GitHub looks, translations in `docs/i18n/`.** GitHub finds community files and the README only in `.github/`, the root, or `docs/`; collecting translations in one directory keeps the root short as languages are added. The switcher uses HTML links so it renders the same inside the centered header.
+* **Two banner files through `<picture>`.** GitHub picks the `<source>` by the viewer's GitHub theme; an SVG with an internal color-scheme query follows the operating system instead.
+* **About panel in a file.** GitHub keeps the description, website, and topics only in its own settings. `.github/settings.yml` records them under version control in the Settings App format, the most common convention, so installing that app later syncs the file without a migration; drafting it with the README keeps the description in step with the tagline.
+* **Images in `.github/assets/`.** It keeps the root clean. When a consumer enables the archive excludes, `.github/` leaves `git archive` output, so README images show only on the forge, which is where READMEs are read.

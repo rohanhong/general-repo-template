@@ -1,6 +1,6 @@
 # Batch mode details
 
-Reference for `git-commit` steps 5, 7, and 9 on the batched path. The gates, options, and ordering stay in SKILL.md; this file holds the checks and diff sources those steps apply.
+Reference for `git-commit` steps 5, 7, and 9 on the batched path. The gates, options, and ordering stay in SKILL.md; this file holds the checks, diff sources, and staging commands those steps apply.
 
 ## Whole-file semantics guard (step 5)
 
@@ -21,5 +21,11 @@ The step-1 size cap applies per batch: a batch whose diff exceeds roughly 400 ch
 Writing all drafts before the first confirmation is what keeps the sequence coherent (consistent scopes, no bullet duplicated across two messages, no vague final batch) and lets the user review a complete plan instead of discovering the next message only after the previous commit has landed.
 
 ## Staging commands (step 9)
+
+Per batch, in plan order:
+
+1. Unstage anything staged outside the batch: `git reset -q HEAD -- <path>...`.
+2. Stage exactly the batch: `git add -- <path>...` for paths present in the working tree (untracked ones only after their step-4 confirmation), and `git rm -q --cached --ignore-unmatch -- <path>...` for deleted paths and rename sources.
+3. Verify that `git diff --cached --name-only --no-renames -z | tr '\0' '\n'` lists exactly the batch's paths, line by line.
 
 Deleted paths and rename sources go through `git rm -q --cached --ignore-unmatch` because `git add` is fatal once the deletion is staged. The verify uses `--no-renames` so a rename lists both sides, as the step-1 listing does, and the comparison against the batch's path list is line by line.

@@ -118,6 +118,13 @@ Skills must run under any agent tool, so they follow these rules:
   characters), for environment needs such as network access or an installed
   program. Frontmatter must be valid YAML: quote a value, or use a block
   scalar such as `>-`, when it contains `: `.
+- Size follows the Agent Skills specification: `name` at most 64
+  characters, `description` at most 1024 characters and about 100 tokens,
+  `compatibility` at most 500 characters, and SKILL.md under 500 lines
+  with a body under 5000 tokens. Keep each body under 4500 tokens as the
+  o200k tokenizer counts them, since other tokenizers count more. Move
+  detail an agent needs only at one step into `references/`, and name the
+  file at that step; gates and Hard rules stay in SKILL.md.
 - Skills need git 2.22 or later (they use `git branch --show-current`) and a
   POSIX shell.
 - A skill may use another skill's file only through a path relative to its

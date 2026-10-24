@@ -72,7 +72,7 @@ Terms such as choice question, independent reads, invoke, and suggest follow AGE
 
 5. **Confirm with a choice question before pressing go.**
 
-   First run the sensitive-content scan over every local file of an add or replace (Reference: pre-gate checks). This depends on the sibling `git-commit` skill: build the filename list and the value and home-path regexes from `../git-commit/SKILL.md` step 6 as `../git-commit/references/sensitive-content.md` (Commands) shows; if that skill is missing, stop and report. Match the filename list against each local and each `path_in_repo` basename. The snippet treats a file with a NUL byte in its first 64 KiB as binary and skips its content; list such files in the render as `not scanned (binary)`. On any hit, STOP and ask per file with a choice question: **keep** / **drop from the plan** / **abort**, showing the file and line numbers, never the matched text. When `private` is `False`, say the repo is PUBLIC, anyone can download the file, and Hub history keeps it after a later delete; **keep** then needs an explicit in-turn opt-in naming the file and `repo_id` (`yes, upload <file> to public <repo_id>`).
+   First run the sensitive-content scan over every local file of an add or replace (Reference: pre-gate checks). This depends on the sibling `git-commit` skill: take the filename list from `../git-commit/SKILL.md` step 6 and set `VALUE_RE` and `HOME_RE` as `../git-commit/references/sensitive-content.md` (Commands) shows; if either file is missing, stop and report. Match the filename list against each local and each `path_in_repo` basename. The snippet treats a file with a NUL byte in its first 64 KiB as binary and skips its content; list such files in the render as `not scanned (binary)`. On any hit, STOP and ask per file with a choice question: **keep** / **drop from the plan** / **abort**, showing the file and line numbers, never the matched text. When `private` is `False`, say the repo is PUBLIC, anyone can download the file, and Hub history keeps it after a later delete; **keep** then needs an explicit in-turn opt-in naming the file and `repo_id` (`yes, upload <file> to public <repo_id>`).
 
    Then render the step-2 operation list, the step-4 message draft, and the step-3 sha256 capture (when computed) as one fenced block, then ask **upload** / **edit** / **abort**.
    * **upload**: proceed to step 6 with the listed ops and the drafted message.
@@ -81,11 +81,13 @@ Terms such as choice question, independent reads, invoke, and suggest follow AGE
    * If the list contains any `CommitOperationDelete` (a `delete` op, each file of an expanded folder, or the old path of a `rename`), prepend a WARNING above the rendered list naming each deletion target. If any bullet is `REPLACE`, add a WARNING naming each replaced `path_in_repo`.
    * A bare "upload" / "yes upload" / "go ahead" typed in the current turn counts as confirmation; ambiguous replies do not.
 
-6. **Run `create_commit`** with the Reference recipe, `operations` matching the approved step-2 list verbatim and `commit_message` substituting the approved step-4 draft verbatim. Map every op type: one `CommitOperationAdd` per add or replace, one `CommitOperationDelete` per delete (per expanded file, never a folder path), one `CommitOperationCopy` per copy, and for each rename the `CommitOperationCopy` + `CommitOperationDelete` pair from the operation-patterns table, all in the same `operations` list. Pass `parent_commit=<sha>` from step 2, so the commit fails instead of acting on a branch that moved after the listing; on that failure, rerun step 2 and the gate. Keep one commit to roughly 100 operations: HF recommends that ceiling, and a longer commit can hit the server's 60-second timeout while still landing server-side (see Failure modes).
+6. **Run `create_commit`** with the Reference recipe, `operations` matching the approved step-2 list verbatim and `commit_message` substituting the approved step-4 draft verbatim. Map every op type: one `CommitOperationAdd` per add or replace, one `CommitOperationDelete` per delete (per expanded file, never a folder path), one `CommitOperationCopy` per copy, and for each rename the `CommitOperationCopy` + `CommitOperationDelete` pair from the operation-patterns table, all in the same `operations` list. Pass `parent_commit=<sha>` from step 2, so the commit fails instead of acting on a branch that moved after the listing; on that failure, rerun step 2 and the gate. Keep one commit to roughly 100 operations: HF recommends that ceiling, and a longer commit can hit the server's 60-second timeout while still landing server-side (see `references/failure-modes.md`).
 
 7. **Capture `info.oid` and `info.commit_url`.** The OID is the 40-character HF commit SHA; the URL is the human-clickable commit page.
 
-8. **Follow-up.** If the consumer repo pins HF revisions via a manifest (the `hf-setup` Phase 6 pattern), sync `hf_revision` plus the relevant per-file `sha256` entries and commit the yaml in git. Otherwise the upload is complete.
+8. **Follow-up.** If the consumer repo pins HF revisions via a manifest (the `hf-setup` Phase 6 pattern), sync `hf_revision` plus the relevant per-file `sha256` entries and commit the yaml in git; `references/manifest-bump.md` steps 3 to 5 show the manifest edit and the check (its steps 1 and 2 are what steps 3 and 6 already ran; never rerun them). Otherwise the upload is complete.
+
+On any failure, read `references/failure-modes.md` before suggesting a fix.
 
 # Reference: canonical recipe
 
@@ -168,69 +170,6 @@ done
 ```
 
 `references/rationale.md` explains why these checks exist and their limits.
-
-# Reference: add a weight and bump the manifest
-
-Run this block in a POSIX shell: the heredoc is a POSIX-shell construct. `<python>` is the interpreter name from the Prerequisites probe, and the local path reaches Python as an argument (see Prerequisites). Owner, repo, and package names below are placeholders; substitute the ones resolved in the Procedure.
-
-```bash
-# 0. Local path, converted for native Windows Python (no-op without cygpath)
-P=/path/to/new_weight.pt
-command -v cygpath >/dev/null 2>&1 && P="$(cygpath -m "$P")"
-
-# 1. Hash locally first (the manifest needs it; the step-3 one-liner)
-<python> -c 'import hashlib,sys;h=hashlib.sha256();f=open(sys.argv[1],"rb");[h.update(b) for b in iter(lambda:f.read(1<<20),b"")];print(h.hexdigest())' "$P"
-# -> abcdef1234... (record this)
-
-# 2. Upload (sys.argv: local path, then the step-2 sha)
-<python> - "$P" "<sha>" <<'PY'
-import sys
-from huggingface_hub import HfApi, CommitOperationAdd
-api = HfApi()
-info = api.create_commit(
-    repo_id="acme/foo-bot-models",
-    repo_type="model",
-    operations=[
-        CommitOperationAdd(
-            path_in_repo="new_weight.pt",
-            path_or_fileobj=sys.argv[1],
-        ),
-    ],
-    commit_message="add new_weight v1",
-    parent_commit=sys.argv[2],
-)
-print("OID:", info.oid)
-print("URL:", info.commit_url)
-PY
-# -> OID: 4268c2a3b3...
-# -> URL: https://huggingface.co/acme/foo-bot-models/commit/4268c2a3...
-
-# 3. Update the consumer manifest (only if the consumer pins HF revisions)
-#    Edit <package>/config/model_weights.yaml:
-#      hf_revision: 4268c2a3b3190ada3545886d395efba0ffda5f5a
-#      weights.<name>.sha256: abcdef1234...
-
-# 4. Verify locally
-<python> <package>/scripts/fetch_weights.py
-# Expect: downloaded -> ... then sha256 OK
-
-# 5. Commit the yaml change in the consumer git repo (separate workflow)
-```
-
-# Failure modes
-
-| Error | Cause | Action |
-|---|---|---|
-| `HfHubHTTPError 401` | Token missing, expired, or revoked | `hf auth login --force`; verify with the Prerequisites `whoami` probe |
-| `HfHubHTTPError 403` | Token scope lacks Write on this repo | Token is Read-only or scoped elsewhere; create a Write token at `https://huggingface.co/settings/tokens` |
-| `HfHubHTTPError 404` | `repo_id` does not exist, or is private and the token has no access | Verify spelling and visibility; check org membership via the Prerequisites `whoami` probe |
-| `HfHubHTTPError 413` | Single file exceeds HF's per-file hard limit (500 GB as of this writing; HF recommends under 200 GB per file, see `https://huggingface.co/docs/hub/storage-limits`) | Split or compress; no workaround above the per-file limit |
-| Timeout on a commit with many operations | More than roughly 100 ops in one `create_commit`; the server may still complete it after the client times out | Check the repo's commit list before retrying; split into commits of about 100 ops, or use `HfApi().upload_large_folder` for a whole folder |
-| LFS storage quota exceeded | Owner's private storage past the free tier (100 GB as of this writing) | Upgrade the plan or delete unused LFS objects via Settings -> Storage |
-| `HfHubHTTPError` on a commit that passed `parent_commit` | The branch moved after the step-2 listing | Rerun step 2 and the step-5 gate; never drop `parent_commit` to force it through |
-| `FileNotFoundError` on a local path | Wrong local path | Check `path_or_fileobj`; absolute paths are safest |
-
-All `HfHubHTTPError` instances expose `.response.status_code` and a body; surface both verbatim before suggesting a fix.
 
 # Rationale
 
