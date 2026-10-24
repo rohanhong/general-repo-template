@@ -31,6 +31,13 @@ file is the single source of instructions; edit it, never an adapter file.
   website, topics) and the template flag. GitHub does not read it: change
   the file first, then apply it on GitHub by hand; a change made on GitHub
   is copied back into the file.
+- `.github/rulesets/protect-main.json` records the GitHub ruleset that
+  blocks deleting and force-pushing `main`. GitHub does not read it
+  either: it is imported on GitHub by hand, and only when the user asks
+  for it, for example by choosing **protect** at `repo-init` step 6h. The template copy
+  holds only rules that apply under every workflow variant; step 6h adds a
+  pull request rule for `github-flow` and `git-flow` on request. A change
+  made on GitHub is copied back into the file.
 
 ## Layout
 

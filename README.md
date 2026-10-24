@@ -97,6 +97,7 @@ EOF
 | `CLAUDE.md`, `.claude/skills` | Claude Code adapters: an `@AGENTS.md` import and a link to `.agents/skills` |
 | `.github/assets/` | README images |
 | `.github/settings.yml` | Record of the GitHub About panel (description, website, topics); GitHub does not read it, so apply changes by hand |
+| `.github/rulesets/protect-main.json` | GitHub ruleset that blocks deleting and force-pushing `main`; import it by hand when you want `main` protected (`repo-init` offers this) |
 | `docs/i18n/` | Translations of the README and the Contributing guide |
 | `LICENSE` `CONTRIBUTING.md` `CODE_OF_CONDUCT.md` `SECURITY.md` | Legal and community files; `repo-docs` rewrites them, and the settings record, for your project |
 

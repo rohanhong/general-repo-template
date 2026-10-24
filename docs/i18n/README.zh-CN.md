@@ -84,6 +84,7 @@ EOF
 | `CLAUDE.md`、`.claude/skills` | Claude Code 适配器：一行 `@AGENTS.md` 导入，以及指向 `.agents/skills` 的链接 |
 | `.github/assets/` | README 图片 |
 | `.github/settings.yml` | GitHub About 栏（简介、网站、topics）的记录；GitHub 不读取它，改动需手动同步 |
+| `.github/rulesets/protect-main.json` | 禁止删除和强推 `main` 的 GitHub ruleset；需要保护 `main` 时手动导入（`repo-init` 会提供此步骤） |
 | `docs/i18n/` | README 与贡献指南的译文 |
 | `LICENSE` `CONTRIBUTING.md` `CODE_OF_CONDUCT.md` `SECURITY.md` | 法律与社区文件；`repo-docs` 会为你的项目重写它们以及设置记录 |
 
